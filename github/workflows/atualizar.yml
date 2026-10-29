@@ -1,0 +1,23 @@
+name: Atualizar cards
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # toda segunda, 06:00 UTC
+  workflow_dispatch:       # botão "Run workflow" na aba Actions
+permissions:
+  contents: write
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests beautifulsoup4
+      - run: python baixar_cartas.py
+      - name: Salvar se houver cartas novas
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add cards.json
+          git diff --cached --quiet || (git commit -m "Atualiza cards.json" && git push)
